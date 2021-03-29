@@ -1,3 +1,5 @@
+#define TINY_GSM_MODEM_SIM800 //Modem version sim800l
+#include <TinyGsmClient.h>
 #include <Arduino.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
