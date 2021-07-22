@@ -1,84 +1,87 @@
-#define TINY_GSM_MODEM_SIM800 //Modem version sim800l
-#include <TinyGsmClient.h>
 #include <Arduino.h>
-#include <WiFi.h>
-#include <PubSubClient.h>
+#include <GPS_Control.h>
+#include <Sim800_Control.h>
 
-// Replace the next variables with your SSID/Password combination
-const char* ssid = "NETGEAR";
-const char* password = "";
 
-// Add your MQTT Broker IP address, example:
-//const char* mqtt_server = "192.168.1.144";
-const char* mqtt_server = "192.168.1.3"; 
+void setup()
+{
+  SerialGPS.begin(9600);
+}
 
-WiFiClient espClient;
-PubSubClient client(espClient);
-long lastMsg = 0;
-char msg[50];
-int value = 0;
+void loop()
+{
+  // print position, altitude, speed, time/date, and satellites:
+  printGPSInfo();
 
-void setup_wifi() {
-  delay(10);
-  // We start by connecting to a WiFi network
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-
-  WiFi.begin(ssid, password);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
+  // "Smart delay" looks for GPS data while the Arduino's not doing anything else
+  smartDelay(1000); 
 }
 
 
-void reconnect() {
-  // Loop until we're reconnected
-  while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    // Attempt to connect
-    if (client.connect("ESP32")) {
-      Serial.println("connected");
-      // Subscribe
-    } else {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
-    }
-  }
-}
 
-void setup() {
-  Serial.begin(115200);
-  // default settings
-  // (you can also pass in a Wire library object like &Wire2)
-  //status = bme.begin();  
-  setup_wifi();
-  client.setServer(mqtt_server, 1883);
+
+/*void updateSerial();
+
+void setup()
+{
+  //Begin serial communication with Arduino and Arduino IDE (Serial Monitor)
+  SerialMon.begin(115200);
   
+  //Begin serial communication with Arduino and SIM800L
+  pinMode(MODEM_PWKEY, OUTPUT);
+  pinMode(MODEM_RST, OUTPUT);
+  pinMode(MODEM_POWER_ON, OUTPUT);
+  digitalWrite(MODEM_PWKEY, LOW);
+  digitalWrite(MODEM_RST, HIGH);
+  digitalWrite(MODEM_POWER_ON, HIGH);
 
+  // Set GSM module baud rate and UART pins
+  SerialAT.begin(115200, SERIAL_8N1, MODEM_RX, MODEM_TX);
+  SerialGPS.begin(9600, SERIAL_8N1, GPS_RX, GPS_TX);
+  delay(3000);
+  SerialMon.println("Initializing...");
+  delay(5000);
+
+  SerialAT.println("AT"); //Once the handshake test is successful, it will back to OK
+  updateSerial();
+  SerialAT.println("AT+CSQ"); //Signal quality test, value range is 0-31 , 31 is the best
+  updateSerial();
+  SerialAT.println("AT+CCID"); //Read SIM information to confirm whether the SIM is plugged
+  updateSerial();
+  SerialAT.println("AT+SAPBR =3,1,\"CONTYPE\",\"GPRS\"");
+
+  SerialAT.println("AT+SAPBR=3,1,\"APN\",\"internet.itelcel.com\""); 
+  updateSerial();
+  SerialAT.println("AT+SAPBR=3,1,\"USER\",\"webgpr\""); 
+  updateSerial();
+  SerialAT.println("AT+SAPBR=3,1,\"PWD\",\"webgprs2002\""); 
+  updateSerial();
+  SerialAT.println("AT+SAPBR=1,1");
+  updateSerial();
+  SerialAT.println("AT+SAPBR=2,1");
+  updateSerial();  
+  SerialAT.println("AT+SAPBR =0,1");
+  updateSerial(); 
 }
 
-void loop() {
-  if (!client.connected()) {
-    reconnect();
+void loop()
+{
+  SerialAT.println("AT+CLBS=1,1");
+  updateSerial();
+  SerialAT.println("AT+CSQ"); //Signal quality test, value range is 0-31 , 31 is the best
+  updateSerial();
+}
+
+void updateSerial()
+{
+  delay(1000);
+  while (SerialMon.available()) 
+  {
+    SerialAT.write(SerialMon.read());//Forward what Serial received to Software Serial Port
   }
-  client.loop();
-
-  long now = millis();
-  if (now - lastMsg > 5000) {
-    lastMsg = now;
-
-    Serial.println("hola mundo");
-    client.publish("input/test", "hola mundo");
+  while(SerialAT.available()) 
+  {
+    SerialMon.write(SerialAT.read());//Forward what Software Serial received to Serial Port
   }
 }
+*/
